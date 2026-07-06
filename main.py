@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# बिल्कुल तुम्हारी पसंद का पुराना सिंपल डिज़ाइन (Instagram: @mr_afsar0000 के साथ)
+# Tumhara wahi 100% purana simple white look aur saare options
 HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +50,6 @@ HTML = """
             cursor: pointer; 
             margin-top: 10px;
         }
-        button:hover { background-color: #cc0000; }
         .instagram { 
             margin-top: 25px; 
             font-size: 14px; 
@@ -59,7 +58,6 @@ HTML = """
         }
         .status { display: none; margin-top: 15px; font-weight: bold; color: #ff0000; }
         .download-box { display: none; margin-top: 20px; }
-        video { width: 100%; border-radius: 5px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -67,9 +65,8 @@ HTML = """
         <h1>YT CUTTER</h1>
         
         <div id="download-section" class="download-box">
-            <video id="player" controls></video>
-            <br>
-            <a id="dl-link" href="/download_file" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-top: 10px;">📥 वीडियो डाउनलोड करें</a>
+            <h3 style="color: #28a745;">✅ Video Ready Hai!</h3>
+            <a id="dl-link" href="/download_file" style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-top: 10px;">📥 Download Video</a>
         </div>
 
         <form id="cutter-form">
@@ -103,10 +100,9 @@ HTML = """
             fetch('/cut', { method: 'POST', body: new FormData(this) })
             .then(res => res.json())
             .then(data => {
-                document.getElementById('btn').style.style.display = 'block';
+                document.getElementById('btn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
                 if(data.status === 'success') {
-                    document.getElementById('player').src = "/stream_video?t=" + new Date().getTime();
                     document.getElementById('download-section').style.display = 'block';
                 } else {
                     document.getElementById('error').innerText = "❌ " + data.message;
@@ -115,7 +111,7 @@ HTML = """
             }).catch(() => {
                 document.getElementById('btn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('error').innerText = "❌ सर्वर एरर आया!";
+                document.getElementById('error').innerText = "❌ Server Error!";
                 document.getElementById('error').style.display = 'block';
             });
         });
@@ -147,36 +143,43 @@ def cut():
     start_sec = parse_time(start_str)
     end_sec = parse_time(end_str)
     
-    try:
-        output = "final_output.mp4"
-        if os.path.exists(output): os.remove(output)
+    output = "/tmp/final_output.mp4"
+    if os.path.exists(output):
+        try: os.remove(output)
+        except: pass
         
-        fmt = 'best[ext=mp4]'
-        if quality_choice == '1080p': fmt = 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]'
-        elif quality_choice == '720p': fmt = 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]'
-        elif quality_choice == '480p': fmt = 'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]'
+    fmt = 'best[ext=mp4]/best'
+    if quality_choice == '1080p': fmt = 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]'
+    elif quality_choice == '720p': fmt = 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]'
+    elif quality_choice == '480p': fmt = 'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]'
 
-        ydl_opts = {
-            'format': fmt,
-            'outtmpl': output,
-            'download_ranges': lambda info, ydl: [{'start_time': start_sec, 'end_time': end_sec}],
-            'quiet': True,
-            'force_keyframes_at_cuts': True
-        }
+    ydl_opts = {
+        'format': fmt,
+        'outtmpl': output,
+        'download_ranges': lambda info, ydl: [{'start_time': start_sec, 'end_time': end_sec}],
+        'quiet': True,
+        'force_keyframes_at_cuts': True,
+        'cookiefile': None
+    }
+    
+    try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl: 
             ydl.download([url])
-        return jsonify({'status': 'success'})
+        if os.path.exists(output) and os.path.getsize(output) > 0:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Video cut nahi ho paya!'})
     except Exception as e: 
-        return jsonify({'status': 'error', 'message': 'वीडियो डाउनलोड करने में दिक्कत आई!'})
-
-@app.route('/stream_video')
-def stream_video(): 
-    return send_file("final_output.mp4")
+        return jsonify({'status': 'error', 'message': 'Kuch dikkat aayi, link sahi check karein.'})
 
 @app.route('/download_file')
 def download_file(): 
-    return send_file("final_output.mp4", as_attachment=True)
+    output = "/tmp/final_output.mp4"
+    if os.path.exists(output):
+        return send_file(output, as_attachment=True)
+    return "File not found", 404
 
 if __name__ == '__main__': 
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
     
