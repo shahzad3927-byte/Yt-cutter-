@@ -4,55 +4,78 @@ import os
 
 app = Flask(__name__)
 
-# तुम्हारी असली वेबसाइट का ओरिजinal डार्क थीम डिज़ाइन (Instagram ID: @mr_afsar0000 के साथ)
+# बिल्कुल तुम्हारी पसंद का पुराना सिंपल डिज़ाइन (Instagram: @mr_afsar0000 के साथ)
 HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT Cutter Ultra Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>YT CUTTER</title>
     <style>
-        body { background: radial-gradient(circle at center, #00111a 0%, #020508 100%); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: rgba(10, 20, 30, 0.95); border-radius: 24px; border: 2px solid #00f0ff; width: 100%; max-width: 430px; padding: 30px; box-shadow: 0 0 35px #00f0ff; position: relative; }
-        h1 { color: #fff; text-align: center; font-size: 26px; text-shadow: 0 0 10px #00f0ff; margin-bottom: 25px; }
-        input, select { width: 100%; padding: 13px; margin-bottom: 15px; background: #050b11; border: 1px solid #00f0ff; color: #fff; border-radius: 10px; box-sizing: border-box; text-align: center; font-size: 14px; }
-        .time-container { display: flex; gap: 10px; margin-bottom: 15px; }
-        .time-box { width: 50%; }
-        .time-box label { display: block; font-size: 12px; color: #00f0ff; margin-bottom: 5px; text-align: left; padding-left: 5px; }
-        button { width: 100%; padding: 16px; background: linear-gradient(135deg, #ff003c 0%, #990024 100%); border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 0 15px rgba(255, 0, 60, 0.4); margin-top: 10px; }
-        .instagram-uid { margin-top: 25px; font-size: 14px; color: #ff007f; font-weight: bold; text-shadow: 0 0 8px rgba(255,0,127,0.6); text-align: center; }
-        .timer-display { display: none; text-align: center; color: #ff003c; margin-top: 15px; font-weight: bold; }
-        .player-container { display: none; margin-top: 20px; text-align: center; }
-        video { width: 100%; border-radius: 10px; border: 1px solid #00f0ff; }
-        .error-msg { display: none; background: rgba(255, 0, 60, 0.2); border: 2px dashed #ff003c; color: #ff3366; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px 20px; 
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container { 
+            max-width: 400px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        }
+        h1 { color: #ff0000; margin-bottom: 20px; font-size: 28px; font-weight: bold; }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button { 
+            background-color: #ff0000; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            width: 100%; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            font-weight: bold;
+            cursor: pointer; 
+            margin-top: 10px;
+        }
+        button:hover { background-color: #cc0000; }
+        .instagram { 
+            margin-top: 25px; 
+            font-size: 14px; 
+            color: #555; 
+            font-weight: bold;
+        }
+        .status { display: none; margin-top: 15px; font-weight: bold; color: #ff0000; }
+        .download-box { display: none; margin-top: 20px; }
+        video { width: 100%; border-radius: 5px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>YT Cutter Ultra Pro</h1>
-        <div id="error-box" class="error-msg"></div>
+    <div class="container">
+        <h1>YT CUTTER</h1>
         
-        <div id="player-box" class="player-container">
-            <video id="video-player" controls></video>
-            <br><br>
-            <a href="/download_file" style="color: #00f0ff; font-weight: bold; text-decoration: none; font-size: 16px;">📥 वीडियो डाउनलोड करें</a>
+        <div id="download-section" class="download-box">
+            <video id="player" controls></video>
+            <br>
+            <a id="dl-link" href="/download_file" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-top: 10px;">📥 वीडियो डाउनलोड करें</a>
         </div>
 
-        <form id="cut-form">
-            <input type="text" id="url" name="url" placeholder="यूट्यूब लिंक पेस्ट करें..." required>
-            
-            <div class="time-container">
-                <div class="time-box">
-                    <label><i class="fa-solid fa-play"></i> Start Time (Min:Sec)</label>
-                    <input type="text" name="start_time" placeholder="0:00" value="0:00" required>
-                </div>
-                <div class="time-box">
-                    <label><i class="fa-solid fa-stop"></i> End Time (Min:Sec)</label>
-                    <input type="text" name="end_time" placeholder="0:15" value="0:15" required>
-                </div>
-            </div>
+        <form id="cutter-form">
+            <input type="text" name="url" placeholder="यूट्यूब लिंक पेस्ट करें..." required>
+            <input type="text" name="start_time" placeholder="Start Time (जैसे 0:00)" required>
+            <input type="text" name="end_time" placeholder="End Time (जैसे 0:15)" required>
             
             <select name="quality">
                 <option value="best">Video Quality: HD (Best)</option>
@@ -61,38 +84,39 @@ HTML = """
                 <option value="480p">480p Medium</option>
             </select>
 
-            <button type="submit" id="submit-btn">💥 प्रोसेस और डाउनलोड</button>
-            <div id="timer" class="timer-display">⏳ वीडियो प्रोसेस हो रहा है, कृपया प्रतीक्षा करें...</div>
+            <button type="submit" id="btn">💥 प्रोसेस और डाउनलोड</button>
+            <div id="loading" class="status">⏳ वीडियो प्रोसेस हो रहा है, कृपया रुकें...</div>
+            <div id="error" class="status" style="color: red;"></div>
         </form>
         
-        <div class="instagram-uid"><i class="fa-brands fa-instagram"></i> Created by: @mr_afsar0000</div>
+        <div class="instagram">Instagram: @mr_afsar0000</div>
     </div>
 
     <script>
-        document.getElementById('cut-form').addEventListener('submit', function(e) {
+        document.getElementById('cutter-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            document.getElementById('submit-btn').style.display = "none";
-            document.getElementById('timer').style.display = "block";
-            document.getElementById('error-box').style.display = "none";
-            document.getElementById('player-box').style.display = "none";
-            
+            document.getElementById('btn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('download-section').style.display = 'none';
+
             fetch('/cut', { method: 'POST', body: new FormData(this) })
-            .then(r => r.json())
+            .then(res => res.json())
             .then(data => {
-                document.getElementById('submit-btn').style.display = "block";
-                document.getElementById('timer').style.display = "none";
-                if (data.status === 'success') {
-                    document.getElementById('video-player').src = "/stream_video?t=" + new Date().getTime();
-                    document.getElementById('player-box').style.display = "block";
+                document.getElementById('btn').style.style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                if(data.status === 'success') {
+                    document.getElementById('player').src = "/stream_video?t=" + new Date().getTime();
+                    document.getElementById('download-section').style.display = 'block';
                 } else {
-                    document.getElementById('error-box').innerText = "❌ " + data.message;
-                    document.getElementById('error-box').style.display = "block";
+                    document.getElementById('error').innerText = "❌ " + data.message;
+                    document.getElementById('error').style.display = 'block';
                 }
-            }).catch(err => {
-                document.getElementById('submit-btn').style.display = "block";
-                document.getElementById('timer').style.display = "none";
-                document.getElementById('error-box').innerText = "❌ सर्वर एरर आया!";
-                document.getElementById('error-box').style.display = "block";
+            }).catch(() => {
+                document.getElementById('btn').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').innerText = "❌ सर्वर एरर आया!";
+                document.getElementById('error').style.display = 'block';
             });
         });
     </script>
@@ -143,7 +167,7 @@ def cut():
             ydl.download([url])
         return jsonify({'status': 'success'})
     except Exception as e: 
-        return jsonify({'status': 'error', 'message': 'वीडियो डाउनलोड या कट करने में दिक्कत आई!'})
+        return jsonify({'status': 'error', 'message': 'वीडियो डाउनलोड करने में दिक्कत आई!'})
 
 @app.route('/stream_video')
 def stream_video(): 
@@ -155,4 +179,4 @@ def download_file():
 
 if __name__ == '__main__': 
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
-        
+    
