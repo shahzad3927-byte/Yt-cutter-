@@ -1,118 +1,262 @@
 from flask import Flask, render_template_string, request, jsonify, send_file
 import yt_dlp
 import os
+import re
 
 app = Flask(__name__)
 
-# Tumhara wahi 100% purana simple white look aur saare options
+# Premium Ultra Glow Dark Theme (Sabhie Options aur @mr_afsar0000 ID ke saath)
 HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT CUTTER</title>
+    <title>YT Cutter Ultra Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            background: radial-gradient(circle at center, #08121f 0%, #02070e 100%); 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+        }
+        .card { 
+            background: rgba(11, 22, 39, 0.9); 
+            border-radius: 24px; 
+            border: 2px solid #00f0ff; 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 35px 30px; 
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); 
+            box-sizing: border-box;
+        }
+        h1 { 
+            color: #ffffff; 
             text-align: center; 
-            padding: 50px 20px; 
-            background-color: #f4f4f9;
-            color: #333;
+            font-size: 28px; 
+            margin-top: 0;
+            margin-bottom: 30px; 
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
-        .container { 
-            max-width: 400px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
         }
-        h1 { color: #ff0000; margin-bottom: 20px; font-size: 28px; font-weight: bold; }
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00f0ff;
+            font-size: 16px;
+        }
         input, select { 
             width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
-            box-sizing: border-box;
+            padding: 14px 14px 14px 45px; 
+            background: #050d1a; 
+            border: 1px solid #00f0ff; 
+            color: #ffffff; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
             font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            background: #071529;
+        }
+        select {
+            padding-left: 45px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper::after {
+            content: '\\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00f0ff;
+            pointer-events: none;
+        }
+        .time-row { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 5px;
+        }
+        .time-col { 
+            width: 50%; 
+        }
+        .time-col label { 
+            display: block; 
+            font-size: 12px; 
+            color: #00f0ff; 
+            margin-bottom: 6px; 
+            text-align: left; 
+            padding-left: 2px;
+            font-weight: 600;
         }
         button { 
-            background-color: #ff0000; 
-            color: white; 
-            border: none; 
-            padding: 14px; 
             width: 100%; 
-            border-radius: 5px; 
+            padding: 16px; 
+            background: linear-gradient(135deg, #ff0055 0%, #b3003b 100%); 
+            border: none; 
+            border-radius: 14px; 
+            color: white; 
+            font-weight: bold; 
             font-size: 16px; 
-            font-weight: bold;
             cursor: pointer; 
-            margin-top: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(255, 0, 85, 0.35);
+            transition: all 0.3s ease;
         }
-        .instagram { 
-            margin-top: 25px; 
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 85, 0.5);
+        }
+        .instagram-uid { 
+            margin-top: 30px; 
             font-size: 14px; 
-            color: #555; 
-            font-weight: bold;
+            color: #ff007f; 
+            font-weight: bold; 
+            text-shadow: 0 0 8px rgba(255, 0, 127, 0.5); 
+            text-align: center; 
         }
-        .status { display: none; margin-top: 15px; font-weight: bold; color: #ff0000; }
-        .download-box { display: none; margin-top: 20px; }
+        .instagram-uid a {
+            color: #ff007f;
+            text-decoration: none;
+        }
+        .status-msg { 
+            display: none; 
+            text-align: center; 
+            margin-top: 15px; 
+            font-weight: 600; 
+            font-size: 14px;
+        }
+        #loading { color: #00f0ff; text-shadow: 0 0 5px rgba(0,240,255,0.4); }
+        #error-box { 
+            background: rgba(255, 0, 85, 0.1); 
+            border: 1px dashed #ff0055; 
+            color: #ff4d88; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin-bottom: 20px;
+        }
+        .download-box { 
+            display: none; 
+            margin-top: 25px; 
+            text-align: center; 
+            background: rgba(0, 240, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #00f0ff 0%, #00a8ff 100%);
+            color: #02070e;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>YT CUTTER</h1>
+    <div class="card">
+        <h1>YT Cutter Ultra Pro</h1>
         
-        <div id="download-section" class="download-box">
-            <h3 style="color: #28a745;">✅ Video Ready Hai!</h3>
-            <a id="dl-link" href="/download_file" style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-top: 10px;">📥 Download Video</a>
-        </div>
-
+        <div id="error-box" class="status-msg"></div>
+        
         <form id="cutter-form">
-            <input type="text" name="url" placeholder="यूट्यूब लिंक पेस्ट करें..." required>
-            <input type="text" name="start_time" placeholder="Start Time (जैसे 0:00)" required>
-            <input type="text" name="end_time" placeholder="End Time (जैसे 0:15)" required>
+            <div class="input-group">
+                <i class="fa-solid fa-link"></i>
+                <input type="text" name="url" placeholder="यूट्यूब लिंक पेस्ट करें..." required>
+            </div>
             
-            <select name="quality">
-                <option value="best">Video Quality: HD (Best)</option>
-                <option value="1080p">1080p Full HD</option>
-                <option value="720p">720p HD</option>
-                <option value="480p">480p Medium</option>
-            </select>
+            <div class="time-row">
+                <div class="time-col">
+                    <label><i class="fa-solid fa-play"></i> Start Time</label>
+                    <div class="input-group" style="margin-bottom:0;">
+                        <i class="fa-regular fa-clock"></i>
+                        <input type="text" name="start_time" placeholder="0:00" value="0:00" required>
+                    </div>
+                </div>
+                <div class="time-col">
+                    <label><i class="fa-solid fa-stop"></i> End Time</label>
+                    <div class="input-group" style="margin-bottom:0;">
+                        <i class="fa-regular fa-clock"></i>
+                        <input type="text" name="end_time" placeholder="0:15" value="0:15" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="select-wrapper">
+                <i class="fa-solid fa-sliders" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #00f0ff; z-index: 10;"></i>
+                <select name="quality">
+                    <option value="best">Video Quality: HD (Best)</option>
+                    <option value="1080p">1080p Full HD</option>
+                    <option value="720p">720p HD</option>
+                    <option value="480p">480p Medium</option>
+                </select>
+            </div>
 
-            <button type="submit" id="btn">💥 प्रोसेस और डाउनलोड</button>
-            <div id="loading" class="status">⏳ वीडियो प्रोसेस हो रहा है, कृपया रुकें...</div>
-            <div id="error" class="status" style="color: red;"></div>
+            <button type="submit" id="submit-btn">💥 प्रोसेस और डाउनलोड</button>
+            <div id="loading" class="status-msg">⏳ वीडियो प्रोसेस हो रहा है, कृपया प्रतीक्षा करें...</div>
         </form>
+
+        <div id="download-section" class="download-box">
+            <h4 style="color: #00f0ff; margin: 0 0 10px 0;">🎉 वीडियो सफलतापूर्वक कट हो गया है!</h4>
+            <a id="dl-link" href="/download_file" class="download-btn">📥 वीडियो डाउनलोड करें</a>
+        </div>
         
-        <div class="instagram">Instagram: @mr_afsar0000</div>
+        <div class="instagram-uid">
+            <i class="fa-brands fa-instagram"></i> Created by: <a href="https://instagram.com/mr_afsar0000" target="_blank">@mr_afsar0000</a>
+        </div>
     </div>
 
     <script>
         document.getElementById('cutter-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            document.getElementById('btn').style.display = 'none';
+            document.getElementById('submit-btn').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
+            document.getElementById('error-box').style.display = 'none';
             document.getElementById('download-section').style.display = 'none';
 
             fetch('/cut', { method: 'POST', body: new FormData(this) })
             .then(res => res.json())
             .then(data => {
-                document.getElementById('btn').style.display = 'block';
+                document.getElementById('submit-btn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
                 if(data.status === 'success') {
                     document.getElementById('download-section').style.display = 'block';
                 } else {
-                    document.getElementById('error').innerText = "❌ " + data.message;
-                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('error-box').innerText = "❌ " + data.message;
+                    document.getElementById('error-box').style.display = 'block';
                 }
             }).catch(() => {
-                document.getElementById('btn').style.display = 'block';
+                document.getElementById('submit-btn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('error').innerText = "❌ Server Error!";
-                document.getElementById('error').style.display = 'block';
+                document.getElementById('error-box').innerText = "❌ सर्वर कनेक्शन एरर!";
+                document.getElementById('error-box').style.display = 'block';
             });
         });
     </script>
@@ -122,6 +266,7 @@ HTML = """
 
 def parse_time(time_str):
     try:
+        time_str = time_str.strip()
         if ':' in time_str:
             parts = time_str.split(':')
             return int(parts[0]) * 60 + int(parts[1])
@@ -158,8 +303,7 @@ def cut():
         'outtmpl': output,
         'download_ranges': lambda info, ydl: [{'start_time': start_sec, 'end_time': end_sec}],
         'quiet': True,
-        'force_keyframes_at_cuts': True,
-        'cookiefile': None
+        'force_keyframes_at_cuts': True
     }
     
     try:
@@ -168,9 +312,9 @@ def cut():
         if os.path.exists(output) and os.path.getsize(output) > 0:
             return jsonify({'status': 'success'})
         else:
-            return jsonify({'status': 'error', 'message': 'Video cut nahi ho paya!'})
+            return jsonify({'status': 'error', 'message': 'Video cut nahi ho paya, link check karein.'})
     except Exception as e: 
-        return jsonify({'status': 'error', 'message': 'Kuch dikkat aayi, link sahi check karein.'})
+        return jsonify({'status': 'error', 'message': 'Download failed! Link ya server issue hai.'})
 
 @app.route('/download_file')
 def download_file(): 
@@ -182,4 +326,4 @@ def download_file():
 if __name__ == '__main__': 
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-    
+            
