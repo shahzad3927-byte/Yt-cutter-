@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# सुंदर डार्क थीम डिज़ाइन जिसमें इंस्टाग्राम आईडी और क्वालिटी के सारे ऑप्शंस हैं
+# तुम्हारी असली वेबसाइट का ओरिजinal डार्क थीम डिज़ाइन (Instagram ID: @mr_afsar0000 के साथ)
 HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +65,7 @@ HTML = """
             <div id="timer" class="timer-display">⏳ वीडियो प्रोसेस हो रहा है, कृपया प्रतीक्षा करें...</div>
         </form>
         
-        <div class="instagram-uid"><i class="fa-brands fa-instagram"></i> Created by: @shahzad3927</div>
+        <div class="instagram-uid"><i class="fa-brands fa-instagram"></i> Created by: @mr_afsar0000</div>
     </div>
 
     <script>
@@ -155,4 +155,4 @@ def download_file():
 
 if __name__ == '__main__': 
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
-    
+        
