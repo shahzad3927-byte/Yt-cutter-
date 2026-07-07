@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, send_file
+From flask import Flask, render_template_string, request, send_file
 import yt_dlp
 import os
 
@@ -85,7 +85,7 @@ HTML = """
             </select>
             
             <div id="timer" class="timer-display">
-                <div class="spinner"></div>वीडियो进程 हो रहा है, कृपया प्रतीक्षा करें...
+                <div class="spinner"></div>वीडियो प्रोसेस हो रहा है, कृपया प्रतीक्षा करें...
             </div>
             <button type="submit" id="submit-btn">💥 प्रोसेस और डाउनलोड</button>
         </form>
@@ -97,6 +97,8 @@ HTML = """
             document.getElementById('submit-btn').style.display = "none";
             document.getElementById('timer').style.display = "block";
         }
+        
+        // जादू: अगर पेज पर एरर मैसेज मौजूद है, तो स्पिनर को छुपाओ और बटन को वापस दिखाओ!
         window.onload = function() {
             if (document.querySelector('.error-msg')) {
                 document.getElementById('submit-btn').style.display = "block";
@@ -134,8 +136,7 @@ def cut():
     quality = request.form.get('quality')
     ratio = request.form.get('ratio')
     
-    # FIX: Render server temporary directory path
-    output_dir = "/tmp/YT_Cuts"
+    output_dir = "/sdcard/YT_Cuts"
     if not os.path.exists(output_dir): os.makedirs(output_dir)
     output = os.path.join(output_dir, "final_output.mp4")
     if os.path.exists(output):
@@ -143,7 +144,7 @@ def cut():
         except: pass
     
     if quality == 'best':
-        format_set = 'best[ext=mp4]/best'
+        format_set = 'best'
     else:
         format_set = f'bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
 
@@ -162,19 +163,14 @@ def cut():
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl: 
             ydl.download([url])
-        if os.path.exists(output) and os.path.getsize(output) > 0:
-            return render_template_string(HTML, video_ready=True, error_text=None)
-        else:
-            return render_template_string(HTML, video_ready=False, error_text="वीडियो फाइल जेनरेट नहीं हो पाई।")
+        return render_template_string(HTML, video_ready=True, error_text=None)
     except Exception as e: 
-        return render_template_string(HTML, video_ready=False, error_text="डाउनलोड फेल! लिंक काम नहीं कर रहा है या सर्वर ओवरलोड है।")
+        return render_template_string(HTML, video_ready=False, error_text="डाउनलोड फेल! लिंक काम नहीं कर रहा है, दोबारा सही यूआरएल डालें।")
 
 @app.route('/stream_video')
-def stream_video(): return send_file("/tmp/YT_Cuts/final_output.mp4")
+def stream_video(): return send_file("/sdcard/YT_Cuts/final_output.mp4")
 
 @app.route('/download_file')
-def download_file(): return send_file("/tmp/YT_Cuts/final_output.mp4", as_attachment=True)
+def download_file(): return send_file("/sdcard/YT_Cuts/final_output.mp4", as_attachment=True)
 
-if __name__ == '__main__': 
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port)
+if __name__ == '__main__': app.run(host='0.0.0.0', port=8080)
